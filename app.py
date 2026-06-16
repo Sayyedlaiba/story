@@ -1,6 +1,7 @@
 import streamlit as st
 from gtts import gTTS
 import os
+from video_generator import make_animated_scene
 
 # --- PAGE CONFIGURATION ---
 st.set_page_config(
