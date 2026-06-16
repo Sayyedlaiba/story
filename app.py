@@ -112,32 +112,39 @@ if 'scene_num' not in st.session_state:
 current_index = st.session_state.scene_num
 scene = STORY_SCENES[current_index]
 
-# Layout: 2 Columns (Left for 2D Character, Right for Story Text & Audio)
-col1, col2 = st.columns([1, 2])
+# 1. DEFINE COLUMNS EXPLICITLY
+columns = st.columns([1, 2])
+col1 = columns[0]
+col2 = columns[1]
 
+# 2. USE THE FIRST COLUMN
 with col1:
-    # Attempt to load local 2D character images, fallback to emojis if missing
     image_path = f"assets/{scene['character']}.png"
-    if os.path.exists(image_path):
-        st.image(image_path, use_column_width=True)
-    else:
-        # Fun fallback large emoji for kids if images aren't uploaded yet
-        st.markdown(f"<h1 style='font-size: 100px; margin: 0;'>{scene['fallback_emoji']}</h1>", unsafe_allow_html=True)
+    audio_path = f"assets/scene_{current_index}.mp3"
+    video_path = f"assets/scene_{current_index}.mp4"
 
+    if not os.path.exists(image_path):
+        image_path = "assets/narrator.png" 
+        
+    with st.spinner("कहानियों का वीडियो तैयार हो रहा है... 🎥"):
+        if not os.path.exists(audio_path):
+            generate_hindi_audio(scene['text'], current_index)
+            
+        if not os.path.exists(video_path) and os.path.exists(image_path):
+            make_animated_scene(image_path, audio_path, video_path)
+
+    if os.path.exists(video_path):
+        st.video(video_path, autoplay=True)
+    else:
+        st.markdown(f"<h1 style='font-size: 100px;'>{scene['fallback_emoji']}</h1>", unsafe_allow_html=True)
+
+# 3. USE THE SECOND COLUMN
 with col2:
-    # Display the story text inside a styled box
     st.markdown(f"""
         <div class="story-box">
             <p class="story-text">{scene['text']}</p>
         </div>
     """, unsafe_allow_html=True)
-    
-    st.write("") # Spacing
-    
-    # Generate and render real voice audio
-    with st.spinner("आवाज़ तैयार हो रही है..."):
-        audio_file = generate_hindi_audio(scene['text'], current_index)
-        st.audio(audio_file, format="audio/mp3", autoplay=True)
 
 # --- NAVIGATION BUTTONS ---
 st.write("---")
