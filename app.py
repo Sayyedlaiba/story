@@ -64,6 +64,42 @@ def generate_hindi_audio(text, scene_index):
         tts = gTTS(text=text, lang='hi', slow=False)
         tts.save(audio_path)
     return audio_path
+    from video_generator import make_animated_scene  # Import your new script
+
+# ... (keep your existing page config, CSS, and story data intact) ...
+
+with col1:
+    # Set paths for image, audio, and final video output
+    image_path = f"assets/{scene['character']}.png"
+    audio_path = f"assets/scene_{current_index}.mp3"
+    video_path = f"assets/scene_{current_index}.mp4"
+
+    # Fallback to a placeholder if the user hasn't added custom 2D images yet
+    if not os.path.exists(image_path):
+        image_path = "assets/narrator.png" # default fallback
+        
+    with st.spinner("कहानियों का वीडियो तैयार हो रहा है... 🎥"):
+        # 1. First, make sure the Hindi audio exists
+        if not os.path.exists(audio_path):
+            generate_hindi_audio(scene['text'], current_index)
+            
+        # 2. Generate the animated video file if it doesn't already exist
+        if not os.path.exists(video_path) and os.path.exists(image_path):
+            make_animated_scene(image_path, audio_path, video_path)
+
+    # 3. Play the generated MP4 file directly inside the app!
+    if os.path.exists(video_path):
+        st.video(video_path, autoplay=True)
+    else:
+        st.markdown(f"<h1 style='font-size: 100px;'>{scene['fallback_emoji']}</h1>", unsafe_allow_html=True)
+
+with col2:
+    # Display story text neatly beside the running animation video
+    st.markdown(f"""
+        <div class="story-box">
+            <p class="story-text">{scene['text']}</p>
+        </div>
+    """, unsafe_allow_html=True)
 
 # --- APP UI ---
 st.title("📚 बच्चों की जादुई कहानियाँ 🌟")
